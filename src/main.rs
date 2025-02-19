@@ -1,17 +1,17 @@
+use keepawake::{KeepAwake, Options};
 use tao::{
     event::Event,
     event_loop::{ControlFlow, EventLoopBuilder},
 };
 use tray_icon::{
     menu::{
-        Menu, MenuEvent, 
-        MenuItem, PredefinedMenuItem
+        CheckMenuItem, Menu, MenuEvent, MenuItem, PredefinedMenuItem
     }, 
     TrayIcon, TrayIconBuilder
 };
 
+mod keepawake;
 mod helpers;
-use helpers::load_icon;
 
 enum UserEvent {
     MenuEvent(tray_icon::menu::MenuEvent),
@@ -19,7 +19,7 @@ enum UserEvent {
 
 fn main() {
     let light_icon_path = concat!(env!("CARGO_MANIFEST_DIR"), "/assets/light_icon.png");
-    let light_icon = load_icon(std::path::Path::new(light_icon_path));
+    let light_icon = helpers::load_icon(std::path::Path::new(light_icon_path));
 
     let event_loop = EventLoopBuilder::<UserEvent>::with_user_event().build();
     let proxy = event_loop.create_proxy();
@@ -28,13 +28,16 @@ fn main() {
     }));
 
     let tray_menu = Menu::new();
+    let activate_item = CheckMenuItem::new("Activate", true, false, None);
     let quit_item = MenuItem::new("Quit", true, None);
     let _ = tray_menu.append_items(&[
+        &activate_item,
         &PredefinedMenuItem::separator(),
         &quit_item
     ]);
 
     let mut tray_icon: Option<TrayIcon> = None;
+    let mut keepawake: Option<KeepAwake> = None;
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Wait;
@@ -50,6 +53,18 @@ fn main() {
                 );
             }
             Event::UserEvent(UserEvent::MenuEvent(event)) => {
+                if event.id == activate_item.id() {
+                    if activate_item.is_enabled() {
+                        let options = Options {
+                            display: true,
+                            idle: true,
+                        };
+                        keepawake = Some(KeepAwake::new(options).unwrap());
+                    } else {
+                        drop(keepawake.as_mut());
+                    }
+                }
+
                 if event.id == quit_item.id() {
                     tray_icon.take();
                     *control_flow = ControlFlow::Exit;
