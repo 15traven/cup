@@ -9,18 +9,21 @@ use windows::{
     }
 };
 
+#[derive(Clone)]
 pub struct Options {
     pub display: bool,
     pub idle: bool
 }
 
+#[derive(Clone)]
 pub struct KeepAwake {
-    options: Options,
+    options: Option<Options>,
     previous: EXECUTION_STATE
 }
 
 impl Drop for KeepAwake {
     fn drop(&mut self) {
+        println!("Droped");
         unsafe {
             SetThreadExecutionState(self.previous);
         }
@@ -28,24 +31,27 @@ impl Drop for KeepAwake {
 }
 
 impl KeepAwake {
-    pub fn new(options: Options) -> Result<Self, WindowsError> {
-        let mut keepawake = KeepAwake {
+    pub fn new(options: Option<Options>) -> Result<Self, WindowsError> {
+        let keepawake = KeepAwake {
             options,
             previous: Default::default()
         };
 
-        keepawake.set()?;
         Ok(keepawake)
     }
 
-    fn set(&mut self) -> Result<(), WindowsError> {
+    pub fn set_options(&mut self, options: Options) {
+        self.options = Some(options);
+    }
+
+    pub fn activate(&mut self) -> Result<(), WindowsError> {
         let mut esflags = ES_CONTINUOUS;
 
-        if self.options.display {
+        if self.options.as_mut().unwrap().display {
             esflags |= ES_DISPLAY_REQUIRED;
         }
 
-        if self.options.idle {
+        if self.options.as_mut().unwrap().idle {
             esflags |= ES_SYSTEM_REQUIRED;
         }
 

@@ -5,7 +5,8 @@ use tao::{
 };
 use tray_icon::{
     menu::{
-        CheckMenuItem, Menu, MenuEvent, MenuItem, PredefinedMenuItem
+        CheckMenuItem, Menu, MenuEvent, 
+        MenuItem, PredefinedMenuItem, Submenu
     }, 
     TrayIcon, TrayIconBuilder
 };
@@ -27,17 +28,38 @@ fn main() {
         let _ = proxy.send_event(UserEvent::MenuEvent(evnet));
     }));
 
+    let preferences_submenu = Submenu::new("Preferences", true);
+    let prevent_screen_dimming_item = CheckMenuItem::new(
+        "Prevent screen dimming",
+        true,
+        true,
+        None
+    );
+    let prevent_sleeping_item = CheckMenuItem::new(
+        "Prevent sleeping", 
+        true,
+        true,
+        None
+    );
+    let _ = preferences_submenu.append_items(&[
+        &prevent_screen_dimming_item,
+        &prevent_sleeping_item
+    ]);
+
     let tray_menu = Menu::new();
-    let activate_item = CheckMenuItem::new("Activate", true, false, None);
+    let activate_item = MenuItem::new("Activate", true, None);
     let quit_item = MenuItem::new("Quit", true, None);
     let _ = tray_menu.append_items(&[
         &activate_item,
+        &PredefinedMenuItem::separator(),
+        &preferences_submenu,
         &PredefinedMenuItem::separator(),
         &quit_item
     ]);
 
     let mut tray_icon: Option<TrayIcon> = None;
     let mut keepawake: Option<KeepAwake> = None;
+    let mut is_activated: bool = false;
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Wait;
@@ -51,19 +73,39 @@ fn main() {
                         .build()
                         .unwrap()
                 );
+
+                keepawake = Some(KeepAwake::new(None).unwrap());
             }
             Event::UserEvent(UserEvent::MenuEvent(event)) => {
                 if event.id == activate_item.id() {
-                    if activate_item.is_enabled() {
-                        let options = Options {
-                            display: true,
-                            idle: true,
-                        };
-                        keepawake = Some(KeepAwake::new(options).unwrap());
+                    if is_activated {
+                        drop(keepawake.clone());
+
+                        is_activated = false;
+                        activate_item.set_text("Activate");
                     } else {
-                        drop(keepawake.as_mut());
+                        keepawake.as_mut().unwrap().set_options(Options {
+                            display: prevent_screen_dimming_item.is_checked(),
+                            idle: prevent_sleeping_item.is_checked(),
+                        });
+
+                        if keepawake.as_mut().unwrap().activate().is_ok() {
+                            is_activated = true;
+                            activate_item.set_text("Stop");
+                        }
                     }
                 }
+
+                if event.id == prevent_screen_dimming_item.id() || 
+                    event.id == prevent_sleeping_item.id() {
+                        drop(keepawake.clone());
+
+                        keepawake.as_mut().unwrap().set_options(Options {
+                            display: prevent_screen_dimming_item.is_checked(),
+                            idle: prevent_sleeping_item.is_checked()
+                        });
+                        let _ = keepawake.as_mut().unwrap().activate();
+                    }
 
                 if event.id == quit_item.id() {
                     tray_icon.take();
