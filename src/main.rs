@@ -96,8 +96,8 @@ fn main() {
                     }
                 }
 
-                if event.id == prevent_screen_dimming_item.id() || 
-                    event.id == prevent_sleeping_item.id() {
+                if event.id == prevent_screen_dimming_item.id() && is_activated || 
+                    event.id == prevent_sleeping_item.id() && is_activated {
                         drop(keepawake.clone());
 
                         keepawake.as_mut().unwrap().set_options(Options {
@@ -106,6 +106,18 @@ fn main() {
                         });
                         let _ = keepawake.as_mut().unwrap().activate();
                     }
+
+                if event.id == prevent_screen_dimming_item.id() {
+                    if !prevent_sleeping_item.is_checked() {
+                        prevent_screen_dimming_item.set_checked(true);
+                    }
+                }
+
+                if event.id == prevent_sleeping_item.id() {
+                    if !prevent_screen_dimming_item.is_checked() {
+                        prevent_sleeping_item.set_checked(true);
+                    }
+                }
 
                 if event.id == quit_item.id() {
                     tray_icon.take();
