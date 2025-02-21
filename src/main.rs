@@ -91,7 +91,7 @@ fn main() {
 
                         if keepawake.as_mut().unwrap().activate().is_ok() {
                             is_activated = true;
-                            activate_item.set_text("Stop");
+                            activate_item.set_text("Deactivate");
                         }
                     }
                 }
