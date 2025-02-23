@@ -1,8 +1,7 @@
 mod private;
 mod public;
 
-use private::get_system_theme;
-
+use private::*;
 pub use public::*;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]

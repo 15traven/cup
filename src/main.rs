@@ -20,14 +20,9 @@ enum UserEvent {
 }
 
 fn main() {
-    let light_icon_path = concat!(env!("CARGO_MANIFEST_DIR"), "/assets/light_icon.png");
-    let light_icon = helpers::load_icon(std::path::Path::new(light_icon_path));
-
-    let dark_icon_path = concat!(env!("CARGO_MANIFEST_DIR"), "/assets/dark_icon.png");
-    let dark_icon = helpers::load_icon(std::path::Path::new(dark_icon_path));
+    let (light_icon, dark_icon) = helpers::get_icons();
 
     let event_loop = EventLoopBuilder::<UserEvent>::with_user_event().build();
-
     let proxy = event_loop.create_proxy();
     MenuEvent::set_event_handler(Some(move |evnet| {
         let _ = proxy.send_event(UserEvent::MenuEvent(evnet));
