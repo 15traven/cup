@@ -13,6 +13,14 @@ use keepawake::{KeepAwake, Options};
 
 mod keepawake;
 mod helpers;
+mod preferences;
+
+use preferences::{
+    Preferences, 
+    DEACTIVE_ON_LOW_BATTERY_PREFERENCE, 
+    PREVENT_SCREEN_DIMMING_PREFERENCE, 
+    PREVENT_SLEEPING_PREFERENCE
+};
 
 enum UserEvent {
     MenuEvent(tray_icon::menu::MenuEvent),
@@ -40,9 +48,17 @@ fn main() {
         true,
         None
     );
+    let deactivate_on_low_battery_item = CheckMenuItem::new(
+        "Deactivate on low battery", 
+        true, 
+        true, 
+        None
+    );
     let _ = preferences_submenu.append_items(&[
         &prevent_screen_dimming_item,
-        &prevent_sleeping_item
+        &prevent_sleeping_item,
+        &PredefinedMenuItem::separator(),
+        &deactivate_on_low_battery_item
     ]);
 
     let tray_menu = Menu::new();
@@ -58,6 +74,7 @@ fn main() {
 
     let mut tray_icon: Option<TrayIcon> = None;
     let mut keepawake: Option<KeepAwake> = None;
+    let mut preferences: Option<Preferences> = None;
     let mut is_activated: bool = false;
 
     event_loop.run(move |event, _, control_flow| {
@@ -72,8 +89,20 @@ fn main() {
                         .build()
                         .unwrap()
                 );
-
                 keepawake = Some(KeepAwake::new(None).unwrap());
+                preferences = Some(Preferences::new());
+                preferences.as_ref().unwrap().set_initial_values();
+
+                prevent_screen_dimming_item.set_checked(
+                    preferences.as_ref().unwrap().load_preference(PREVENT_SCREEN_DIMMING_PREFERENCE)
+                );
+                prevent_sleeping_item.set_checked(
+                    preferences.as_ref().unwrap().load_preference(PREVENT_SLEEPING_PREFERENCE)
+                );
+                deactivate_on_low_battery_item.set_checked(
+                    preferences.as_ref().unwrap().load_preference(DEACTIVE_ON_LOW_BATTERY_PREFERENCE)
+                );
+
                 helpers::listen_for_theme_changes(
                     tray_icon.as_ref().unwrap().clone(), 
                     light_icon.clone(), 
@@ -91,7 +120,7 @@ fn main() {
                         keepawake.as_mut().unwrap().set_options(Options {
                             display: prevent_screen_dimming_item.is_checked(),
                             idle: prevent_sleeping_item.is_checked(),
-                            deactivate_on_low_battery: true
+                            deactivate_on_low_battery: preferences.as_ref().unwrap().load_preference(DEACTIVE_ON_LOW_BATTERY_PREFERENCE)
                         });
 
                         if keepawake.as_mut().cloned().unwrap().activate().is_ok() {
@@ -108,7 +137,7 @@ fn main() {
                         keepawake.as_mut().unwrap().set_options(Options {
                             display: prevent_screen_dimming_item.is_checked(),
                             idle: prevent_sleeping_item.is_checked(),
-                            deactivate_on_low_battery: true
+                            deactivate_on_low_battery: preferences.as_ref().unwrap().load_preference(DEACTIVE_ON_LOW_BATTERY_PREFERENCE)
                         });
                         let _ = keepawake.as_mut().cloned().unwrap().activate();
                     }
@@ -116,13 +145,30 @@ fn main() {
                 if event.id == prevent_screen_dimming_item.id() {
                     if !prevent_sleeping_item.is_checked() {
                         prevent_screen_dimming_item.set_checked(true);
+                    } else {
+                        preferences.as_ref().unwrap().toggle_preference(PREVENT_SCREEN_DIMMING_PREFERENCE);
+                        prevent_screen_dimming_item.set_checked(
+                            preferences.as_ref().unwrap().load_preference(PREVENT_SCREEN_DIMMING_PREFERENCE)
+                        );
                     }
                 }
 
                 if event.id == prevent_sleeping_item.id() {
                     if !prevent_screen_dimming_item.is_checked() {
                         prevent_sleeping_item.set_checked(true);
+                    } else {
+                        preferences.as_ref().unwrap().toggle_preference(PREVENT_SLEEPING_PREFERENCE);
+                        prevent_sleeping_item.set_checked(
+                            preferences.as_ref().unwrap().load_preference(PREVENT_SLEEPING_PREFERENCE)
+                        );
                     }
+                }
+
+                if event.id == deactivate_on_low_battery_item.id() {
+                    preferences.as_ref().unwrap().toggle_preference(DEACTIVE_ON_LOW_BATTERY_PREFERENCE);
+                    deactivate_on_low_battery_item.set_checked(
+                        preferences.as_ref().unwrap().load_preference(DEACTIVE_ON_LOW_BATTERY_PREFERENCE)
+                    );
                 }
 
                 if event.id == quit_item.id() {
