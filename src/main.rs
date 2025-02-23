@@ -1,5 +1,3 @@
-use helpers::listen_for_theme_changes;
-use keepawake::{KeepAwake, Options};
 use tao::{
     event::Event,
     event_loop::{ControlFlow, EventLoopBuilder},
@@ -11,6 +9,7 @@ use tray_icon::{
     }, 
     TrayIcon, TrayIconBuilder
 };
+use keepawake::{KeepAwake, Options};
 
 mod keepawake;
 mod helpers;
@@ -75,7 +74,7 @@ fn main() {
                 );
 
                 keepawake = Some(KeepAwake::new(None).unwrap());
-                listen_for_theme_changes(
+                helpers::listen_for_theme_changes(
                     tray_icon.as_ref().unwrap().clone(), 
                     light_icon.clone(), 
                     dark_icon.clone()

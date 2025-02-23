@@ -23,7 +23,6 @@ pub struct KeepAwake {
 
 impl Drop for KeepAwake {
     fn drop(&mut self) {
-        println!("Droped");
         unsafe {
             SetThreadExecutionState(self.previous);
         }
