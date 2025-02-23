@@ -1,3 +1,4 @@
+use helpers::listen_for_theme_changes;
 use keepawake::{KeepAwake, Options};
 use tao::{
     event::Event,
@@ -22,7 +23,11 @@ fn main() {
     let light_icon_path = concat!(env!("CARGO_MANIFEST_DIR"), "/assets/light_icon.png");
     let light_icon = helpers::load_icon(std::path::Path::new(light_icon_path));
 
+    let dark_icon_path = concat!(env!("CARGO_MANIFEST_DIR"), "/assets/dark_icon.png");
+    let dark_icon = helpers::load_icon(std::path::Path::new(dark_icon_path));
+
     let event_loop = EventLoopBuilder::<UserEvent>::with_user_event().build();
+
     let proxy = event_loop.create_proxy();
     MenuEvent::set_event_handler(Some(move |evnet| {
         let _ = proxy.send_event(UserEvent::MenuEvent(evnet));
@@ -75,6 +80,11 @@ fn main() {
                 );
 
                 keepawake = Some(KeepAwake::new(None).unwrap());
+                listen_for_theme_changes(
+                    tray_icon.as_ref().unwrap().clone(), 
+                    light_icon.clone(), 
+                    dark_icon.clone()
+                );
             }
             Event::UserEvent(UserEvent::MenuEvent(event)) => {
                 if event.id == activate_item.id() {
