@@ -91,9 +91,10 @@ fn main() {
                         keepawake.as_mut().unwrap().set_options(Options {
                             display: prevent_screen_dimming_item.is_checked(),
                             idle: prevent_sleeping_item.is_checked(),
+                            deactivate_on_low_battery: true
                         });
 
-                        if keepawake.as_mut().unwrap().activate().is_ok() {
+                        if keepawake.as_mut().cloned().unwrap().activate().is_ok() {
                             is_activated = true;
                             activate_item.set_text("Deactivate");
                         }
@@ -106,9 +107,10 @@ fn main() {
 
                         keepawake.as_mut().unwrap().set_options(Options {
                             display: prevent_screen_dimming_item.is_checked(),
-                            idle: prevent_sleeping_item.is_checked()
+                            idle: prevent_sleeping_item.is_checked(),
+                            deactivate_on_low_battery: true
                         });
-                        let _ = keepawake.as_mut().unwrap().activate();
+                        let _ = keepawake.as_mut().cloned().unwrap().activate();
                     }
 
                 if event.id == prevent_screen_dimming_item.id() {

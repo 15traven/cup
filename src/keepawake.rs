@@ -1,18 +1,19 @@
+use std::{
+    thread::{self, sleep}, 
+    time::Duration
+};
 use windows::{
     core::Error as WindowsError,
     Win32::System::Power::{
-        SetThreadExecutionState, 
-        ES_DISPLAY_REQUIRED, 
-        ES_SYSTEM_REQUIRED,
-        EXECUTION_STATE,
-        ES_CONTINUOUS
+        GetSystemPowerStatus, SetThreadExecutionState, ES_CONTINUOUS, ES_DISPLAY_REQUIRED, ES_SYSTEM_REQUIRED, EXECUTION_STATE, SYSTEM_POWER_STATUS
     }
 };
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct Options {
     pub display: bool,
-    pub idle: bool
+    pub idle: bool,
+    pub deactivate_on_low_battery: bool
 }
 
 #[derive(Clone)]
@@ -43,7 +44,7 @@ impl KeepAwake {
         self.options = Some(options);
     }
 
-    pub fn activate(&mut self) -> Result<(), WindowsError> {
+    pub fn activate(mut self) -> Result<(), WindowsError> {
         let mut esflags = ES_CONTINUOUS;
 
         if self.options.as_mut().unwrap().display {
@@ -59,8 +60,26 @@ impl KeepAwake {
             if self.previous == EXECUTION_STATE(0) {
                 return Err(WindowsError::from_win32());
             }
-
-            Ok(())
         }
+
+        if self.options.as_ref().unwrap().deactivate_on_low_battery {
+            thread::spawn(move || {
+                let mut status = SYSTEM_POWER_STATUS::default();
+                unsafe {
+                    loop {
+                        if GetSystemPowerStatus(&mut status).is_ok() {
+                            let battery_life_precent = status.BatteryLifePercent;
+                            if battery_life_precent < 25 {
+                                drop(self.clone());
+                            }
+                        }
+
+                        sleep(Duration::from_secs(60));
+                    }
+                }
+            });
+        }
+
+        Ok(())        
     }
 }
