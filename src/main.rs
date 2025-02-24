@@ -103,11 +103,7 @@ fn main() {
                         is_activated = false;
                         activate_item.set_text("Activate");
                     } else {
-                        keepawake.as_mut().unwrap().set_options(Options {
-                            display: prevent_screen_dimming_item.is_checked(),
-                            idle: prevent_sleeping_item.is_checked(),
-                            deactivate_on_low_battery: preferences.as_ref().unwrap().load_preference(DEACTIVE_ON_LOW_BATTERY_PREFERENCE)
-                        });
+                        keepawake.as_mut().unwrap().set_options(Options::from_preferences(preferences.as_ref().unwrap()));
 
                         if keepawake.as_mut().cloned().unwrap().activate().is_ok() {
                             is_activated = true;
@@ -120,11 +116,7 @@ fn main() {
                     event.id == prevent_sleeping_item.id() && is_activated {
                         drop(keepawake.clone());
 
-                        keepawake.as_mut().unwrap().set_options(Options {
-                            display: prevent_screen_dimming_item.is_checked(),
-                            idle: prevent_sleeping_item.is_checked(),
-                            deactivate_on_low_battery: preferences.as_ref().unwrap().load_preference(DEACTIVE_ON_LOW_BATTERY_PREFERENCE)
-                        });
+                        keepawake.as_mut().unwrap().set_options(Options::from_preferences(preferences.as_ref().unwrap()));
                         let _ = keepawake.as_mut().cloned().unwrap().activate();
                     }
 
