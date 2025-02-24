@@ -37,24 +37,9 @@ fn main() {
     }));
 
     let preferences_submenu = Submenu::new("Preferences", true);
-    let prevent_screen_dimming_item = CheckMenuItem::new(
-        "Prevent screen dimming",
-        true,
-        true,
-        None
-    );
-    let prevent_sleeping_item = CheckMenuItem::new(
-        "Prevent sleeping", 
-        true,
-        true,
-        None
-    );
-    let deactivate_on_low_battery_item = CheckMenuItem::new(
-        "Deactivate on low battery", 
-        true, 
-        true, 
-        None
-    );
+    let prevent_screen_dimming_item = CheckMenuItem::new("Prevent screen dimming", true, true, None);
+    let prevent_sleeping_item = CheckMenuItem::new("Prevent sleeping", true, true, None);
+    let deactivate_on_low_battery_item = CheckMenuItem::new("Deactivate on low battery", true, true, None);
     let _ = preferences_submenu.append_items(&[
         &prevent_screen_dimming_item,
         &prevent_sleeping_item,
@@ -92,8 +77,8 @@ fn main() {
                 );
                 keepawake = Some(KeepAwake::new(None).unwrap());
                 preferences = Some(Preferences::new());
+                
                 preferences.as_ref().unwrap().set_initial_values();
-
                 prevent_screen_dimming_item.set_checked(
                     preferences.as_ref().unwrap().load_preference(PREVENT_SCREEN_DIMMING_PREFERENCE)
                 );

@@ -5,7 +5,13 @@ use std::{
 use windows::{
     core::Error as WindowsError,
     Win32::System::Power::{
-        GetSystemPowerStatus, SetThreadExecutionState, ES_CONTINUOUS, ES_DISPLAY_REQUIRED, ES_SYSTEM_REQUIRED, EXECUTION_STATE, SYSTEM_POWER_STATUS
+        GetSystemPowerStatus, 
+        SetThreadExecutionState, 
+        ES_CONTINUOUS,
+        ES_DISPLAY_REQUIRED, 
+        ES_SYSTEM_REQUIRED, 
+        EXECUTION_STATE, 
+        SYSTEM_POWER_STATUS
     }
 };
 use crate::types::Options;
