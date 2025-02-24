@@ -9,8 +9,9 @@ use tray_icon::{
     }, 
     TrayIcon, TrayIconBuilder
 };
-use keepawake::{KeepAwake, Options};
+use keepawake::KeepAwake;
 
+mod types;
 mod keepawake;
 mod helpers;
 mod preferences;
@@ -21,7 +22,7 @@ use preferences::{
     PREVENT_SCREEN_DIMMING_PREFERENCE, 
     PREVENT_SLEEPING_PREFERENCE
 };
-
+use types::Options;
 enum UserEvent {
     MenuEvent(tray_icon::menu::MenuEvent),
 }

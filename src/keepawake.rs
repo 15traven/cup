@@ -8,13 +8,7 @@ use windows::{
         GetSystemPowerStatus, SetThreadExecutionState, ES_CONTINUOUS, ES_DISPLAY_REQUIRED, ES_SYSTEM_REQUIRED, EXECUTION_STATE, SYSTEM_POWER_STATUS
     }
 };
-
-#[derive(Clone, Copy)]
-pub struct Options {
-    pub display: bool,
-    pub idle: bool,
-    pub deactivate_on_low_battery: bool
-}
+use crate::types::Options;
 
 #[derive(Clone)]
 pub struct KeepAwake {

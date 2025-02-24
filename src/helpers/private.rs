@@ -1,5 +1,5 @@
 use windows_registry::CURRENT_USER;
-use super::ColorMode;
+use crate::types::ColorMode;
 
 const SUBKEY: &str = "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";
 const VALUE: &str = "AppsUseLightTheme";

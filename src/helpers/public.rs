@@ -3,6 +3,7 @@ use std::{
     time::Duration
 };
 use tray_icon::{TrayIcon, Icon};
+use crate::types::ColorMode;
 use super::{get_system_theme, load_icon};
 
 pub fn get_icons() -> (Icon, Icon) {
@@ -27,9 +28,9 @@ pub fn listen_for_theme_changes(
             let current_theme = get_system_theme();
             if prev_theme != current_theme {
                 let _ = match current_theme {
-                    super::ColorMode::Dark => tray_icon.set_icon(Some(light_icon.clone())),
-                    super::ColorMode::Light => tray_icon.set_icon(Some(dark_icon.clone())),
-                    super::ColorMode::Unspecified => todo!(),
+                    ColorMode::Dark => tray_icon.set_icon(Some(light_icon.clone())),
+                    ColorMode::Light => tray_icon.set_icon(Some(dark_icon.clone())),
+                    ColorMode::Unspecified => todo!(),
                 };
 
                 prev_theme = current_theme;
